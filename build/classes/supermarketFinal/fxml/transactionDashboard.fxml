@@ -340,7 +340,7 @@
             <Font size="18.0" />
          </font>
       </Label>
-      <Label fx:id="amountField" layoutX="368.0" layoutY="674.0" text="Total Amount: 0">
+      <Label fx:id="amountField" layoutX="360.0" layoutY="674.0" text="Total Amount: 0">
          <font>
             <Font size="18.0" />
          </font>

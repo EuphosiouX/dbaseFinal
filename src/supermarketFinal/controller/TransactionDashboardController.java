@@ -65,8 +65,13 @@ public class TransactionDashboardController implements Initializable, CheckTextF
     private String mjdate;
     private String mpoints;
     private Integer i = 0;
+    private Double total = 0.0;
     private Double grandTotal = 0.0;
     private Integer points = 0;
+    private Integer invoice_id = 0;
+    private Integer order_id = 0;
+    private Integer initial_order_id = 0;
+    private boolean checkout = false;
 
     @FXML
     private Label cashierIdLabel;
@@ -168,11 +173,17 @@ public class TransactionDashboardController implements Initializable, CheckTextF
         ObservableList<String> categoryList = FXCollections.observableArrayList("Debit Card", "Credit Card", "Cash");
         paymentComb.setItems(categoryList);
         
-        showItemList("");
+        showItemList("");     
     }
     
     @FXML
-    private void backButtonClicked(ActionEvent event) throws IOException {
+    private void backButtonClicked(ActionEvent event) throws IOException, SQLException {
+        if (i > 0) {
+            con.rollback();
+            con.setAutoCommit(true);
+            resetIncrement();
+            con.setAutoCommit(false);
+        }
         FXMLLoader ldr = loader.loadStage("/supermarketFinal/fxml/askMembership.fxml");
         Parent root = ldr.load();
         
@@ -213,7 +224,7 @@ public class TransactionDashboardController implements Initializable, CheckTextF
             loader.showAlert("Enter valid input!!");
         }
         else if (belowZero(qtyField.getText())){
-            loader.showAlert("Number can't be negative!!");
+            loader.showAlert("Number can't be 0 / negative!!");
         }
         else if (Integer.parseInt(qtyField.getText()) > Integer.parseInt(stockLabel.getText())){
             loader.showAlert("Insufficient stock!!");
@@ -221,6 +232,7 @@ public class TransactionDashboardController implements Initializable, CheckTextF
         else{
             con.setAutoCommit(false);
             if (i==0){
+                insertItem();
                 receipt.setText(receipt.getText() + "========WELCOME TO OWL MARKET========\n");
                 receipt.setText(receipt.getText() + "===================================\n");
                 receipt.setText(receipt.getText() + "\tCashier\t\t       : " + gname + "\n");
@@ -234,9 +246,9 @@ public class TransactionDashboardController implements Initializable, CheckTextF
                 receipt.setText(receipt.getText() + "===================================\n");
                 updateItem();
                 i++;
-                Double total = Double.parseDouble(priceLabel.getText()) * Double.parseDouble(qtyField.getText());
-                total = Math.round(total*100)/100.0;
-                grandTotal = grandTotal + total;
+//                Double total = Double.parseDouble(priceLabel.getText()) * Double.parseDouble(qtyField.getText());
+//                total = Math.round(total*100)/100.0;
+//                grandTotal = grandTotal + total;
                 points = grandTotal.intValue()/10;
                 receipt.setText(receipt.getText() + "\tNo\t\t               : " + i + "\n");
                 receipt.setText(receipt.getText() + "\tInventory Name(id): " + inventoryNameLabel.getText() + "(" + inventoryIdLabel.getText() + ")\n");
@@ -248,9 +260,9 @@ public class TransactionDashboardController implements Initializable, CheckTextF
             else{
                 updateItem();
                 i++;
-                Double total = Double.parseDouble(priceLabel.getText()) * Double.parseDouble(qtyField.getText());
-                total = Math.round(total*100)/100.0;
-                grandTotal = grandTotal + total;
+//                Double total = Double.parseDouble(priceLabel.getText()) * Double.parseDouble(qtyField.getText());
+//                total = Math.round(total*100)/100.0;
+//                grandTotal = grandTotal + total;
                 points = grandTotal.intValue()/10;
                 receipt.setText(receipt.getText() + "\tNo\t\t               : " + i + "\n");
                 receipt.setText(receipt.getText() + "\tInventory Name(id): " + inventoryNameLabel.getText() + "(" + inventoryIdLabel.getText() + ")\n");
@@ -267,8 +279,10 @@ public class TransactionDashboardController implements Initializable, CheckTextF
 
     @FXML
     private void voidButtonClicked(ActionEvent event) throws SQLException {
-        // Check if textFieldIsEmpty() == true
-        if(textFieldIsEmpty()){
+        if(i < 1){
+            loader.showAlert("No transaction!!");
+        }
+        else if(textFieldIsEmpty()){
             // Throw alert
             loader.showAlert("Fill in required data!!");
         }
@@ -276,18 +290,18 @@ public class TransactionDashboardController implements Initializable, CheckTextF
             loader.showAlert("Enter valid input!!");
         }
         else if (belowZero(qtyField.getText())){
-            loader.showAlert("Number can't be negative!!");
+            loader.showAlert("Number can't be 0 / negative!!");
         }
-        else if (Integer.parseInt(qtyField.getText()) > Integer.parseInt(stockLabel.getText())){
-            loader.showAlert("Insufficient stock!!");
+        else if (Integer.parseInt(qtyField.getText()) > basketQty()){
+            loader.showAlert("You can't void more than what you ordered!!");
         }
         else{
             con.setAutoCommit(false);
             deleteItem();
             i++;
-            Double total = Double.parseDouble(priceLabel.getText()) * -Double.parseDouble(qtyField.getText());
-            total = Math.round(total*100)/100.0;
-            grandTotal = grandTotal + total;
+//            Double total = Double.parseDouble(priceLabel.getText()) * -Double.parseDouble(qtyField.getText());
+//            total = Math.round(total*100)/100.0;
+//            grandTotal = grandTotal + total;
             points = grandTotal.intValue()/10;
             receipt.setText(receipt.getText() + "\tNo\t\t               : VOID\n");
             receipt.setText(receipt.getText() + "\tInventory Name(id): " + inventoryNameLabel.getText() + "(" + inventoryIdLabel.getText() + ")\n");
@@ -305,9 +319,17 @@ public class TransactionDashboardController implements Initializable, CheckTextF
     private void clearButtonClicked(ActionEvent event) throws SQLException {
         receipt.setText("");
         con.rollback();
+        con.setAutoCommit(true);
+        resetIncrement();
+        con.setAutoCommit(false);
         i = 0;
+        total = 0.0;
         grandTotal = 0.0;
         points = 0;
+        invoice_id = 0;
+        order_id = 0;
+        initial_order_id = 0;
+        checkout = false;
         showItemList("");
         setEmpty();
         showPoints();
@@ -325,6 +347,7 @@ public class TransactionDashboardController implements Initializable, CheckTextF
             loader.showAlert("Select payment method!!");
         }
         else{
+            checkout = true;
             if(paymentComb.getSelectionModel().getSelectedItem() == "Debit Card" || paymentComb.getSelectionModel().getSelectedItem() == "Credit Card"){
                 cash = grandTotal;
                 change = cash - grandTotal;
@@ -368,13 +391,31 @@ public class TransactionDashboardController implements Initializable, CheckTextF
 
     @FXML
     private void finishButtonClicked(ActionEvent event) throws SQLException {
-        con.commit();
-        con.setAutoCommit(true);
-        insertItem();
-        if (mid != null){
-            addPoints();
+        if(i < 1){
+            loader.showAlert("No transaction!!");
         }
-        loader.showAlert("Transaction completed!!");
+        else if (checkout == false){
+            loader.showAlert("Checkout first!!");
+        }
+        else{
+     //       insertItem();
+            updateInvoice();
+            if (mid != null){
+                addPoints();
+            }
+            con.commit();
+            i = 0;
+            total = 0.0;
+            grandTotal = 0.0;
+            points = 0;
+            invoice_id = 0;
+            order_id = 0;
+            initial_order_id = 0;
+            checkout = false;
+            receipt.setText("");
+            loader.showAlert("Transaction completed!!"); 
+        }
+        
     }
 
     @Override
@@ -444,29 +485,82 @@ public class TransactionDashboardController implements Initializable, CheckTextF
     @Override
     public void insertItem() {
         if (mid == null){
-            query = "INSERT INTO invoice VALUES (NULL, CURRENT_DATE(), '" + paymentComb.getSelectionModel().getSelectedItem() + "', " + grandTotal + ", " + gid + ", NULL)";
+            query = "INSERT INTO invoice VALUES (NULL, CURRENT_DATE(), '-', 0, " + gid + ", NULL)";
         }
         else{
-            query = "INSERT INTO invoice VALUES (NULL, CURRENT_DATE(), '" + paymentComb.getSelectionModel().getSelectedItem() + "', " + grandTotal + ", " + gid + ", " + mid + ")";
+            query = "INSERT INTO invoice VALUES (NULL, CURRENT_DATE(), '-', 0, " + gid + ", " + mid + ")";
         }
+        dbLink.executeQuery(query);
         
         // Execute the query by calling executeQuery() from JDBConnection
-        dbLink.executeQuery(query);
         // Show the table by calling showItemList() 
-        showItemList("");
+        query = "SELECT invoice_id FROM invoice ORDER BY invoice_id DESC LIMIT 1";
+        
+        rs = dbLink.queryResult(query);
+        try{
+            while(rs.next()){
+                invoice_id = rs.getInt("invoice_id");
+            }
+        }
+        catch(Exception ex){
+            ex.printStackTrace();
+        }
+        
+        query = "SELECT order_id FROM orders ORDER BY order_id DESC LIMIT 1";
+        
+        rs = dbLink.queryResult(query);
+        try{
+            while(rs.next()){
+                initial_order_id = rs.getInt("order_id");
+            }
+        }
+        catch(Exception ex){
+            ex.printStackTrace();
+        }
     }
 
     @Override
     public void updateItem() {
-        query = "UPDATE inventory SET stock = stock - " + qtyField.getText() + " WHERE inventory_id = " + inventoryIdLabel.getText();
-        // Execute the query by calling executeQuery() from JDBConnection
+        
+        query = "INSERT INTO orders VALUES(NULL, " + inventoryIdLabel.getText() + "," + priceLabel.getText() + "," + qtyField.getText() + ", price*quantity, " + invoice_id + ")";
         dbLink.executeQuery(query);
-        // Show the table by calling showItemList() 
-        showItemList("");
-    }
-    
-    private void addPoints(){
-        query = "UPDATE memberships SET  points = points + " + points + " WHERE membership_id = " + mid;
+        
+        query = "SELECT order_id FROM orders ORDER BY order_id DESC LIMIT 1";
+        
+        rs = dbLink.queryResult(query);
+        try{
+            while(rs.next()){
+                order_id = rs.getInt("order_id");
+            }
+        }
+        catch(Exception ex){
+            ex.printStackTrace();
+        }
+        
+        query = "SELECT total FROM orders WHERE order_id = " + order_id;
+        rs = dbLink.queryResult(query);
+        try{
+            while(rs.next()){
+                total = rs.getDouble("total");
+            }
+        }
+        catch(Exception ex){
+            ex.printStackTrace();
+        }
+        
+        query = "SELECT SUM(total) AS grand_total FROM orders WHERE invoice_id = " + invoice_id;
+        rs = dbLink.queryResult(query);
+        try{
+            while(rs.next()){
+                grandTotal = rs.getDouble("grand_total");
+                grandTotal = Math.round(grandTotal*100)/100.0;
+            }
+        }
+        catch(Exception ex){
+            ex.printStackTrace();
+        }
+        
+        query = "UPDATE inventory SET stock = stock - " + qtyField.getText() + " WHERE inventory_id = " + inventoryIdLabel.getText();
         // Execute the query by calling executeQuery() from JDBConnection
         dbLink.executeQuery(query);
         // Show the table by calling showItemList() 
@@ -475,6 +569,44 @@ public class TransactionDashboardController implements Initializable, CheckTextF
 
     @Override
     public void deleteItem() {
+        
+        query = "INSERT INTO orders VALUES(NULL, " + inventoryIdLabel.getText() + "," + priceLabel.getText() + ", -" + qtyField.getText() + ", price*quantity, " + invoice_id + ")";
+        dbLink.executeQuery(query);
+        
+        query = "SELECT order_id FROM orders ORDER BY order_id DESC LIMIT 1";
+        rs = dbLink.queryResult(query);
+        try{
+            while(rs.next()){
+                order_id = rs.getInt("order_id");
+            }
+        }
+        catch(Exception ex){
+            ex.printStackTrace();
+        }
+        
+        query = "SELECT total FROM orders WHERE order_id = " + order_id;
+        rs = dbLink.queryResult(query);
+        try{
+            while(rs.next()){
+                total = rs.getDouble("total");
+            }
+        }
+        catch(Exception ex){
+            ex.printStackTrace();
+        }
+        
+        query = "SELECT SUM(total) AS grand_total FROM orders WHERE invoice_id = " + invoice_id;
+        rs = dbLink.queryResult(query);
+        try{
+            while(rs.next()){
+                grandTotal = rs.getDouble("grand_total");
+                grandTotal = Math.round(grandTotal*100)/100.0;
+            }
+        }
+        catch(Exception ex){
+            ex.printStackTrace();
+        }
+        
         query = "UPDATE inventory SET stock = stock + " + qtyField.getText() + " WHERE inventory_id = " + inventoryIdLabel.getText();
         // Execute the query by calling executeQuery() from JDBConnection
         dbLink.executeQuery(query);
@@ -490,6 +622,42 @@ public class TransactionDashboardController implements Initializable, CheckTextF
     @Override
     public boolean isExist() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+    
+    private void addPoints(){
+        query = "UPDATE memberships SET  points = points + " + points + " WHERE membership_id = " + mid;
+        // Execute the query by calling executeQuery() from JDBConnection
+        dbLink.executeQuery(query);
+        // Show the table by calling showItemList() 
+        showItemList("");
+    }
+    
+    private Integer basketQty(){
+        Integer qty = 0;
+        query = "SELECT SUM(quantity) AS qty FROM orders WHERE inventory_id = " + inventoryIdLabel.getText() + " AND invoice_id = " + invoice_id;
+        rs = dbLink.queryResult(query);
+        try{
+            while(rs.next()){
+                qty = rs.getInt("qty");
+            }
+        }
+        catch(Exception ex){
+            ex.printStackTrace();
+        }
+        
+        return qty;
+    }
+    
+    private void updateInvoice(){
+        query = "UPDATE invoice SET payment_method = '" + paymentComb.getSelectionModel().getSelectedItem() + "', price = " + grandTotal + " WHERE invoice_id = " + invoice_id;
+        dbLink.executeQuery(query);
+    }
+    
+    private void resetIncrement(){
+        query = "ALTER TABLE orders AUTO_INCREMENT = " + (initial_order_id + 1);
+        dbLink.executeQuery(query);
+        query = "ALTER TABLE invoice AUTO_INCREMENT = " + invoice_id;
+        dbLink.executeQuery(query);
     }
     
     @Override
