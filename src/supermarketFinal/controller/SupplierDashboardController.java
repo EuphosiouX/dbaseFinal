@@ -82,6 +82,7 @@ public class SupplierDashboardController implements Initializable, CheckTextFiel
     @FXML
     private void searchButtonClicked(ActionEvent event) {
         searchItem();
+        suppliernameSearchField.setText("");
     }
 
     @FXML
@@ -155,6 +156,7 @@ public class SupplierDashboardController implements Initializable, CheckTextFiel
     @Override
     public ObservableList getItemList(String q) {
         ObservableList<Supplier> supplierList = FXCollections.observableArrayList();
+        
         query = "SELECT * FROM supplier" + q;
         rs = dbLink.queryResult(query);
         
@@ -236,7 +238,7 @@ public class SupplierDashboardController implements Initializable, CheckTextFiel
 
     @Override
     public void setEmpty() {
-        supplierIdLabel.setText("");
+        supplierIdLabel.setText("Id");
         supplierNameField.setText("");
         addressField.setText("");
         phoneNoField.setText("");

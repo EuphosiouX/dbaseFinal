@@ -296,7 +296,7 @@ public class CashierDashboardController implements Initializable, CheckTextField
 
     @Override
     public void setEmpty() {
-        staffIdLabel.setText("");
+        staffIdLabel.setText("Id");
         firstNameField.setText("");
         lastNameField.setText("");
         address.setText("");

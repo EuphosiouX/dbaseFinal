@@ -161,8 +161,7 @@ public class MembershipsDashboardController implements Initializable, CheckTextF
         lastNameField.setText(membership.getLast_name());
         phoneNoField.setText(membership.getPhone_no());
         pointsField.setText("" + membership.getPoints());
-        birthDatePick.setValue(LocalDate.now());
-        
+        birthDatePick.setValue(LocalDate.parse(membership.getBirth_date()));
     }
     
     @Override
@@ -258,7 +257,7 @@ public class MembershipsDashboardController implements Initializable, CheckTextF
 
     @Override
     public void setEmpty() {
-        membershipIdLabel.setText("");
+        membershipIdLabel.setText("Id");
         firstNameField.setText("");
         lastNameField.setText("");
         phoneNoField.setText("");

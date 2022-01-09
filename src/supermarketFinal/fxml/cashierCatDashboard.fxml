@@ -93,7 +93,11 @@
             </JFXComboBox>
          </children>
       </VBox>
-      <HBox alignment="CENTER" layoutX="700.0" layoutY="120.0" prefHeight="27.0" prefWidth="200.0" />
+      <HBox alignment="CENTER" layoutX="700.0" layoutY="120.0" prefHeight="27.0" prefWidth="200.0">
+         <children>
+            <JFXTextField fx:id="workingDaysSearchField" promptText="Working Days" />
+            <JFXButton fx:id="searchBtn" onAction="#searchButtonClicked" text="Search" />
+         </children></HBox>
       <HBox alignment="CENTER" layoutX="600.0" layoutY="147.0" prefHeight="183.0" prefWidth="400.0">
          <children>
             <JFXButton fx:id="addBtn" onAction="#addButtonClicked" prefHeight="38.0" prefWidth="98.0" style="-fx-background-color: #002480;" text="Add" textFill="WHITE">
@@ -111,6 +115,15 @@
                   <Insets right="20.0" />
                </HBox.margin>
             </JFXButton>
+         </children>
+      </HBox>
+      <HBox alignment="CENTER" layoutX="600.0" layoutY="60.0" prefHeight="60.0" prefWidth="400.0">
+         <children>
+            <Label prefHeight="55.0" prefWidth="57.0" text="Search:">
+               <font>
+                  <Font size="18.0" />
+               </font>
+            </Label>
          </children>
       </HBox>
    </children>

@@ -117,6 +117,8 @@ public class AskMembershipController implements Initializable, CheckTextField, I
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         showItemList("");
+        birthDatePick.setValue(LocalDate.now());
+        pointsField.setText("0");
     }    
 
     @FXML
@@ -208,8 +210,8 @@ public class AskMembershipController implements Initializable, CheckTextField, I
         lastNameLabel.setText(membership.getLast_name());
         phoneNoLabel.setText(membership.getPhone_no());
         birthDateLabel.setText(membership.getBirth_date());
-        joinDateLabel.setText(membership.getJoin_date());
-        pointsLabel.setText("" + membership.getPoints());
+        joinDateLabel.setText(membership.getBirth_date());
+        pointsLabel.setText("" + membership.getPoints());  
     }
 
     @Override
@@ -254,7 +256,7 @@ public class AskMembershipController implements Initializable, CheckTextField, I
     @Override
     public void insertItem() {
         query = "INSERT INTO memberships VALUES (NULL, '" + firstNameField.getText() + "','" + lastNameField.getText() + "','" 
-                       + phoneNoField.getText() + "','" + birthDatePick.getValue().toString() + "', CURRENT_DATE()," + points.getText() + ")";
+                       + phoneNoField.getText() + "','" + birthDatePick.getValue().toString() + "', CURRENT_DATE()," + pointsField.getText() + ")";
         // Execute the query by calling executeQuery() from JDBConnection
         dbLink.executeQuery(query);
         // Show the table by calling showItemList() 
@@ -294,7 +296,7 @@ public class AskMembershipController implements Initializable, CheckTextField, I
     }
     
     @Override
-    public void setEmpty() {
+    public void setEmpty() {     
         firstNameField.setText("");
         lastNameField.setText("");
         phoneNoField.setText("");

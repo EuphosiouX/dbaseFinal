@@ -292,6 +292,9 @@ public class TransactionDashboardController implements Initializable, CheckTextF
         else if (belowZero(qtyField.getText())){
             loader.showAlert("Number can't be 0 / negative!!");
         }
+        else if (isExist() == false){
+            loader.showAlert("Items not found in order!!");
+        }
         else if (Integer.parseInt(qtyField.getText()) > basketQty()){
             loader.showAlert("You can't void more than what you ordered!!");
         }
@@ -621,7 +624,23 @@ public class TransactionDashboardController implements Initializable, CheckTextF
 
     @Override
     public boolean isExist() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        query = "SELECT count(1) FROM orders WHERE inventory_id = " + inventoryIdLabel.getText() + " AND invoice_id = " + invoice_id;
+        rs = dbLink.queryResult(query);
+        
+        try{
+            while(rs.next()){
+                // Check if value in first column in databse == 1
+                if(rs.getInt(1) != 0){
+                    return true;
+                }
+            }    
+        }
+        // Catch exception if query is not correct
+        catch(Exception ex){
+            // Print stack trace
+            ex.printStackTrace();
+        }
+        return false;
     }
     
     private void addPoints(){

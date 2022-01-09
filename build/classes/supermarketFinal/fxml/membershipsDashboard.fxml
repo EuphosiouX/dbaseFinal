@@ -132,7 +132,7 @@
       </HBox>
       <HBox alignment="CENTER" layoutX="700.0" layoutY="120.0" prefHeight="27.0" prefWidth="200.0">
          <children>
-            <JFXTextField fx:id="phoneNoSearchField" promptText="First Name" text="Phone No" />
+            <JFXTextField fx:id="phoneNoSearchField" promptText="Phone No" />
             <JFXButton fx:id="searchBtn" onAction="#searchButtonClicked" text="Search" />
          </children>
       </HBox>

@@ -69,15 +69,29 @@ public class CashierCatDashboardController implements Initializable, CheckTextFi
     private Label staffCategoryIdLabel;
     @FXML
     private JFXTextField hourlySalaryField;
+    @FXML
+    private JFXTextField workingDaysSearchField;
+    @FXML
+    private JFXButton searchBtn;
 
     /**
      * Initializes the controller class.
      */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
+        ObservableList<String> categoryList = FXCollections.observableArrayList("Everyday", "Weekday", "Weekend");
+        workingDaysComb.setItems(categoryList);
+        categoryList = FXCollections.observableArrayList("Morning Shift", "Afternoon Shift", "Night Shift");
+        workingHoursComb.setItems(categoryList);
         // TODO
         showItemList("");
     }    
+    
+    @FXML
+    private void searchButtonClicked(ActionEvent event) {
+        searchItem();
+        workingDaysSearchField.setText("");
+    }
 
     @FXML
     private void addButtonClicked(ActionEvent event) {
@@ -110,7 +124,7 @@ public class CashierCatDashboardController implements Initializable, CheckTextFi
         else{
             updateItem();
         // Throw alert
-            loader.showAlert("Item successfully inserted");
+            loader.showAlert("Item successfully updated");
         }  
         setEmpty();
     }
@@ -125,7 +139,7 @@ public class CashierCatDashboardController implements Initializable, CheckTextFi
         else{
             deleteItem();
             // Throw alert
-            loader.showAlert("Item successfully inserted");
+            loader.showAlert("Item successfully deleted");
         }  
         setEmpty();
     }
@@ -133,16 +147,13 @@ public class CashierCatDashboardController implements Initializable, CheckTextFi
     @FXML
     private void cashierCategoryTableClicked(MouseEvent event) {
         StaffCategory staffCategory = cashierCategoryTb.getSelectionModel().getSelectedItem();
-        staffCategoryId.setText("" + staffCategory.getStaff_category_id());
-        categoryName.setText(staffCategory.getCategory_name());
-        hourlySalary.setText("" + staffCategory.getHourly_salary());
-        workingDays.setText(staffCategory.getWorking_days());
-        workingHours.setText(staffCategory.getWorking_hours());
+        staffCategoryIdLabel.setText("" + staffCategory.getStaff_category_id());
+        hourlySalaryField.setText("" + staffCategory.getHourly_salary());
     }
 
     @Override
     public boolean textFieldIsEmpty() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return (hourlySalaryField.getText().isEmpty() || workingDaysComb.getSelectionModel().getSelectedItem() == null || workingHoursComb.getSelectionModel().getSelectedItem() == null);
     }
 
     @Override
@@ -190,7 +201,7 @@ public class CashierCatDashboardController implements Initializable, CheckTextFi
     @Override
     public void updateItem() {
         query = "UPDATE staffcategory SET category_name  = 'Cashier', hourly_salary = " + hourlySalaryField.getText()+ ", working_days = '" + 
-                workingDaysComb.getSelectionModel().getSelectedItem() + "', working_days = '" + workingHoursComb.getSelectionModel().getSelectedItem() + "' WHERE staff_category_id = " + staffCategoryIdLabel.getText();
+                workingDaysComb.getSelectionModel().getSelectedItem() + "', working_hours = '" + workingHoursComb.getSelectionModel().getSelectedItem() + "' WHERE staff_category_id = " + staffCategoryIdLabel.getText();
         // Execute the query by calling executeQuery() from JDBConnection
         dbLink.executeQuery(query);
         // Show the table by calling showItemList() 
@@ -208,21 +219,29 @@ public class CashierCatDashboardController implements Initializable, CheckTextFi
 
     @Override
     public void searchItem() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        showItemList(" WHERE working_days LIKE '%" + workingDaysSearchField.getText() + "%'");
     }
 
     @Override
     public boolean isExist() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        query = "SELECT count(1) FROM staffcategory WHERE working_days = '" + workingDaysComb.getSelectionModel().getSelectedItem() + "' AND working_hours = '" + workingHoursComb.getSelectionModel().getSelectedItem() + "'";
+        rs = dbLink.queryResult(query);
+        
+        try {
+            while(rs.next()){
+                if(rs.getInt(1) != 0){
+                    return true;
+                }
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return false;
     }
 
     @Override
     public void setEmpty() {
-        staffCategoryId.setText("");
-        categoryName.setText("");
-        hourlySalary.setText("");
-        workingDays.setText("");
-        workingHours.setText("");
-    }
-    
+        staffCategoryIdLabel.setText("Id");
+        hourlySalaryField.setText("");
+    }   
 }

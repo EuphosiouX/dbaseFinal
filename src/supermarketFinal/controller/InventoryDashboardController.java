@@ -46,7 +46,6 @@ public class InventoryDashboardController implements Initializable, CheckTextFie
     
     private String query;
     private ResultSet rs;
-    private Stage stage;
 
     @FXML
     private TableView<Inventory> inventoryTb;
