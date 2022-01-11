@@ -178,8 +178,8 @@ public class CashierDashboardController implements Initializable, CheckTextField
         staffIdLabel.setText("" + staff.getStaff_id());
         firstNameField.setText(staff.getFirst_name());
         lastNameField.setText(staff.getLast_name());
-        address.setText(staff.getAddress());
-        phoneNo.setText(staff.getPhone_no());
+        addressField.setText(staff.getAddress());
+        phoneNoField.setText(staff.getPhone_no());
     }
 
     @Override

@@ -16,7 +16,7 @@
     <jar href="lib\org.eclipse.persistence.core-2.5.2.jar" size="5056217" download="eager" />
     <jar href="lib\org.eclipse.persistence.jpa-2.5.2.jar" size="1364245" download="eager" />
     <jar href="lib\org.eclipse.persistence.jpa.jpql-2.5.2.jar" size="1366247" download="eager" />
-    <jar href="supermarketFinal.jar" size="2621447" download="eager" />
+    <jar href="supermarketFinal.jar" size="2621043" download="eager" />
   </resources>
   <jfx:javafx-desc  width="800" height="600" main-class="supermarketFinal.Main"  name="supermarketFinal" />
   <update check="always"/>
