@@ -141,6 +141,8 @@ public class TransactionDashboardController implements Initializable, CheckTextF
     private Label stockLabel;
     @FXML
     private Label amountField;
+    @FXML
+    private JFXButton historyBtn;
     
 
     public void getCashier(String id, String name){
@@ -417,8 +419,12 @@ public class TransactionDashboardController implements Initializable, CheckTextF
             checkout = false;
             receipt.setText("");
             loader.showAlert("Transaction completed!!"); 
-        }
-        
+        }   
+    }
+    
+    @FXML
+    private void historyButtonClicked(ActionEvent event) throws IOException {
+        loader.showStage("/supermarketFinal/fxml/invoiceOrderDashboard.fxml");
     }
 
     @Override

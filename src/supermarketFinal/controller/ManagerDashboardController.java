@@ -37,6 +37,8 @@ public class ManagerDashboardController {
     private JFXButton homeBtn;
     @FXML
     private BorderPane dashboardManagerPane;
+    @FXML
+    private JFXButton historyBtn;
     
     @FXML
     private void inventoryButtonCLicked(ActionEvent event) throws IOException {
@@ -74,5 +76,10 @@ public class ManagerDashboardController {
         stage.close();    
         loader.showStage("/supermarketFinal/fxml/Login.fxml");
     }
-    
+
+    @FXML
+    private void historyButtonClicked(ActionEvent event) throws IOException {
+        Pane view = loader.getView("/supermarketFinal/fxml/invoiceOrderDashboard2.fxml");    
+        dashboardManagerPane.setCenter(view);
+    } 
 }
